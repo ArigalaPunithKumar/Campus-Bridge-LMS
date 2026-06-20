@@ -584,16 +584,49 @@ const FacultyDashboard = () => {
     });
 
     useEffect(() => {
-        const user = location.state?.user || { id: 1, name: "A Punith Kumar", email: "punith@university.edu", role: "faculty" };
+        const user = location.state?.user || {
+            id: 1,
+            name: "A Punith Kumar",
+            email: "punith@university.edu",
+            role: "faculty"
+        };
+
         setFaculty(user);
         fetchDashboardData(user.id);
         fetchAllPostedAttendance(user.id);
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location]);
 
-    useEffect(() => { if (activeMenu === 'attendance' && selectedCourseId) fetchStudentsAndAttendance(selectedCourseId, selectedDate); }, [activeMenu, selectedCourseId, selectedDate]);
-    useEffect(() => { if (activeMenu === 'grading') fetchSubmissions(); }, [activeMenu]);
-    useEffect(() => { if (activeMenu === 'leaves') fetchLeaves(); }, [activeMenu]);
-    useEffect(() => { if (activeMenu === 'schedule') fetchSchedule(); }, [activeMenu]);
+    useEffect(() => {
+        if (activeMenu === "attendance" && selectedCourseId) {
+            fetchStudentsAndAttendance(selectedCourseId, selectedDate);
+        }
+    }, [activeMenu, selectedCourseId, selectedDate]);
+
+    useEffect(() => {
+        if (activeMenu === "grading") {
+            fetchSubmissions();
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeMenu]);
+
+    useEffect(() => {
+        if (activeMenu === "leaves") {
+            fetchLeaves();
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeMenu]);
+
+    useEffect(() => {
+        if (activeMenu === "schedule") {
+            fetchSchedule();
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeMenu]);
 
     const fetchDashboardData = async (fid) => {
         try {
