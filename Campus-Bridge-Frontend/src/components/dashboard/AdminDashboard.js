@@ -27,7 +27,7 @@ import {
 } from "react-icons/fa";
 import "./AdminDashboard.css";
 
-const API_BASE = "http://localhost:5000/api/admin";
+const API_BASE = "https://campus-bridge-lms.onrender.com/api/admin";
 
 const emptyCourseForm = {
     courseName: "",

@@ -113,7 +113,7 @@ const AuthPage = () => {
                 password: registerData.password,
                 role: registerData.role,
             };
-            const res = await axios.post("http://localhost:5000/api/auth/register", payload);
+            const res = await axios.post("https://campus-bridge-lms.onrender.com/api/auth/register", payload);
             showMessage("success", res.data.msg || "Registration successful.");
             setIsRightPanelActive(false);
             setRegisterData({
@@ -138,7 +138,7 @@ const AuthPage = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            const res = await axios.post("http://localhost:5000/api/auth/login", loginData);
+            const res = await axios.post("https://campus-bridge-lms.onrender.com/api/auth/login", loginData);
             const { user } = res.data;
             showMessage("success", `Welcome back, ${user.name}.`);
 
@@ -161,7 +161,7 @@ const AuthPage = () => {
 
         setIsSubmitting(true);
         try {
-            const res = await axios.post("http://localhost:5000/api/auth/forgot-password", { email: forgotEmail });
+            const res = await axios.post("https://campus-bridge-lms.onrender.com/api/auth/forgot-password", { email: forgotEmail });
             setDevOtp(res.data.otpPreview || "");
             showMessage("success", res.data.msg || `OTP sent to ${forgotEmail}.`);
             setOtpTimer(OTP_DURATION_SECONDS);
@@ -177,7 +177,7 @@ const AuthPage = () => {
     const handleResendOtp = async () => {
         setIsSubmitting(true);
         try {
-            const res = await axios.post("http://localhost:5000/api/auth/forgot-password", { email: forgotEmail });
+            const res = await axios.post("https://campus-bridge-lms.onrender.com/api/auth/forgot-password", { email: forgotEmail });
             setDevOtp(res.data.otpPreview || "");
             showMessage("success", res.data.msg || `OTP resent to ${forgotEmail}.`);
             setOtpTimer(OTP_DURATION_SECONDS);
@@ -197,7 +197,7 @@ const AuthPage = () => {
 
         setIsSubmitting(true);
         try {
-            await axios.post("http://localhost:5000/api/auth/verify-otp", { email: forgotEmail, otp });
+            await axios.post("https://campus-bridge-lms.onrender.com/api/auth/verify-otp", { email: forgotEmail, otp });
             showMessage("success", "OTP verified. Create your new password.");
             setIsResetStage(true);
         } catch (err) {
@@ -215,7 +215,7 @@ const AuthPage = () => {
 
         setIsSubmitting(true);
         try {
-            await axios.post("http://localhost:5000/api/auth/reset-password", { email: forgotEmail, newPassword });
+            await axios.post("https://campus-bridge-lms.onrender.com/api/auth/reset-password", { email: forgotEmail, newPassword });
             showMessage("success", "Password reset successful. Please login.");
             setForgotEmail("");
             resetForgotFlow();

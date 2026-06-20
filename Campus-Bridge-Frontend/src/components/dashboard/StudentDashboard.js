@@ -189,7 +189,7 @@ const OldCodingArena = ({ user, selectedLanguage, setSelectedLanguage, code, set
 
     const loadQuestionDetail = async (questionId, language = selectedLanguage) => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/coding/questions/${questionId}`);
+            const res = await axios.get(`https://campus-bridge-lms.onrender.com/api/coding/questions/${questionId}`);
             setSelectedQuestion(res.data);
             setPublicTests(res.data.publicTests || []);
             setRunResults([]);
@@ -208,7 +208,7 @@ const OldCodingArena = ({ user, selectedLanguage, setSelectedLanguage, code, set
     useEffect(() => {
         const loadQuestions = async () => {
             try {
-                const res = await axios.get("http://localhost:5000/api/coding/questions");
+                const res = await axios.get("https://campus-bridge-lms.onrender.com/api/coding/questions");
                 const list = res.data || [];
                 setQuestions(list);
                 if (list.length > 0) {
@@ -235,7 +235,7 @@ const OldCodingArena = ({ user, selectedLanguage, setSelectedLanguage, code, set
         setCompilerOutput("Running public test cases...");
         setMobileTab('output');
         try {
-            const res = await axios.post(`http://localhost:5000/api/coding/questions/${selectedQuestion.id}/run`, {
+            const res = await axios.post(`https://campus-bridge-lms.onrender.com/api/coding/questions/${selectedQuestion.id}/run`, {
                 language: selectedLanguage,
                 code
             });
@@ -257,7 +257,7 @@ const OldCodingArena = ({ user, selectedLanguage, setSelectedLanguage, code, set
         setCustomOutput("Running custom input...");
         setMobileTab('output');
         try {
-            const res = await axios.post(`http://localhost:5000/api/coding/questions/${selectedQuestion.id}/run`, {
+            const res = await axios.post(`https://campus-bridge-lms.onrender.com/api/coding/questions/${selectedQuestion.id}/run`, {
                 language: selectedLanguage,
                 code,
                 customInput: compilerInput,
@@ -281,7 +281,7 @@ const OldCodingArena = ({ user, selectedLanguage, setSelectedLanguage, code, set
         setCompilerOutput("Submitting against public and private test cases...");
         setMobileTab('output');
         try {
-            const res = await axios.post(`http://localhost:5000/api/coding/questions/${selectedQuestion.id}/submit`, {
+            const res = await axios.post(`https://campus-bridge-lms.onrender.com/api/coding/questions/${selectedQuestion.id}/submit`, {
                 language: selectedLanguage,
                 code,
                 studentId: user.id
@@ -469,7 +469,7 @@ const CodingArena = ({ user, onExit, selectedLanguage, setSelectedLanguage, code
 
     const loadQuestionDetail = async (questionId, language = selectedLanguage) => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/coding/questions/${questionId}`);
+            const res = await axios.get(`https://campus-bridge-lms.onrender.com/api/coding/questions/${questionId}`);
             setSelectedQuestion(res.data);
             setPublicTests(res.data.publicTests || []);
             setRunResults([]);
@@ -505,7 +505,7 @@ const CodingArena = ({ user, onExit, selectedLanguage, setSelectedLanguage, code
     useEffect(() => {
         const loadQuestions = async () => {
             try {
-                const res = await axios.get("http://localhost:5000/api/coding/questions");
+                const res = await axios.get("https://campus-bridge-lms.onrender.com/api/coding/questions");
                 const list = res.data || [];
                 setQuestions(list);
                 const firstQuestion = list.find(question => question.slug === "checkerboard-pattern") || list[0];
@@ -537,7 +537,7 @@ const CodingArena = ({ user, onExit, selectedLanguage, setSelectedLanguage, code
         setCompilerOutput("Running public test cases...");
         setMobileTab("output");
         try {
-            const res = await axios.post(`http://localhost:5000/api/coding/questions/${selectedQuestion.id}/run`, {
+            const res = await axios.post(`https://campus-bridge-lms.onrender.com/api/coding/questions/${selectedQuestion.id}/run`, {
                 language: selectedLanguage,
                 code
             });
@@ -565,7 +565,7 @@ const CodingArena = ({ user, onExit, selectedLanguage, setSelectedLanguage, code
         setCustomOutput("Running custom input...");
         setMobileTab("output");
         try {
-            const res = await axios.post(`http://localhost:5000/api/coding/questions/${selectedQuestion.id}/run`, {
+            const res = await axios.post(`https://campus-bridge-lms.onrender.com/api/coding/questions/${selectedQuestion.id}/run`, {
                 language: selectedLanguage,
                 code,
                 customInput: compilerInput,
@@ -599,7 +599,7 @@ const CodingArena = ({ user, onExit, selectedLanguage, setSelectedLanguage, code
         setCompilerOutput("Submitting against public and private test cases...");
         setMobileTab("output");
         try {
-            const res = await axios.post(`http://localhost:5000/api/coding/questions/${selectedQuestion.id}/submit`, {
+            const res = await axios.post(`https://campus-bridge-lms.onrender.com/api/coding/questions/${selectedQuestion.id}/submit`, {
                 language: selectedLanguage,
                 code,
                 studentId: user.id
@@ -952,7 +952,7 @@ const AssignmentsView = ({ assignments, setAssignments, user, code }) => {
             if (file) formData.append("file", file);
             formData.append("code", code || "");
 
-            await axios.post("http://localhost:5000/api/student/submit", formData);
+            await axios.post("https://campus-bridge-lms.onrender.com/api/student/submit", formData);
 
             setTimeout(() => {
                 setAssignments(prev => prev.map(a => a.id === selectedAssignment.id ? { ...a, status: "submitted" } : a));
@@ -1036,7 +1036,7 @@ const LeaveApplicationView = ({ user, courses }) => {
     const fetchLeaveHistory = useCallback(async () => {
         if (!user.id) return;
         try {
-            const res = await axios.get(`http://localhost:5000/api/student/leaves/${user.id}`);
+            const res = await axios.get(`https://campus-bridge-lms.onrender.com/api/student/leaves/${user.id}`);
             setLeaveHistory(res.data || []);
         } catch (err) {
             setLeaveHistory([]);
@@ -1053,7 +1053,7 @@ const LeaveApplicationView = ({ user, courses }) => {
             return alert("Please map out all application fields.");
         }
         try {
-            await axios.post("http://localhost:5000/api/student/leaves", { studentId: user.id, ...leaveForm });
+            await axios.post("https://campus-bridge-lms.onrender.com/api/student/leaves", { studentId: user.id, ...leaveForm });
             alert("Leave Request Dispatched Successfully!");
             setLeaveForm({ courseId: "", fromDate: "", toDate: "", reason: "" });
             fetchLeaveHistory();
@@ -1124,7 +1124,7 @@ const SettingsView = ({ settings, setSettings, user }) => {
         setSettings(newSettings);
         localStorage.setItem("studentSettings", JSON.stringify(newSettings));
         try {
-            await axios.put(`http://localhost:5000/api/student/settings/${user.id}`, newSettings);
+            await axios.put(`https://campus-bridge-lms.onrender.com/api/student/settings/${user.id}`, newSettings);
         } catch (err) { console.error("Failed to save setting"); }
     };
 
@@ -1216,7 +1216,7 @@ const ChatAssistant = ({ showAssistant, setShowAssistant, code, language, mode =
         setInput("");
         setIsLoading(true);
         try {
-            const res = await axios.post("http://localhost:5000/api/compiler/analyze", {
+            const res = await axios.post("https://campus-bridge-lms.onrender.com/api/compiler/analyze", {
                 mode,
                 message: finalInput,
                 code: isCodingMode ? code : "",
@@ -1327,9 +1327,9 @@ const StudentDashboard = () => {
             setIsLoading(true);
             try {
                 const [dashRes, notifRes, schedRes] = await Promise.all([
-                    axios.get(`http://localhost:5000/api/student/dashboard/${currentUser.id}`),
-                    axios.get(`http://localhost:5000/api/notifications/${currentUser.id}`),
-                    axios.get(`http://localhost:5000/api/student/schedule/${currentUser.id}`)
+                    axios.get(`https://campus-bridge-lms.onrender.com/api/student/dashboard/${currentUser.id}`),
+                    axios.get(`https://campus-bridge-lms.onrender.com/api/notifications/${currentUser.id}`),
+                    axios.get(`https://campus-bridge-lms.onrender.com/api/student/schedule/${currentUser.id}`)
                 ]);
                 setCourses(dashRes.data.courses || []);
                 setAssignments(dashRes.data.assignments || []);
@@ -1339,7 +1339,7 @@ const StudentDashboard = () => {
                 setSchedule(schedRes.data || []);
             } catch (err) { console.error(err); }
             try {
-                const streakRes = await axios.get(`http://localhost:5000/api/student/streak/${currentUser.id}`);
+                const streakRes = await axios.get(`https://campus-bridge-lms.onrender.com/api/student/streak/${currentUser.id}`);
                 setStreak(streakRes.data || { currentStreak: currentUser.streak || 1, longestStreak: currentUser.streak || 1 });
             } catch (err) {
                 setStreak(prev => ({ ...prev, currentStreak: currentUser.streak || prev.currentStreak }));
@@ -1360,7 +1360,7 @@ const StudentDashboard = () => {
 
     const markNotificationRead = async (id) => {
         try {
-            await axios.put(`http://localhost:5000/api/notifications/read/${id}`);
+            await axios.put(`https://campus-bridge-lms.onrender.com/api/notifications/read/${id}`);
             setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: 1 } : n));
             setUnreadCount(prev => Math.max(0, prev - 1));
         } catch (err) { console.error(err); }
@@ -1370,7 +1370,7 @@ const StudentDashboard = () => {
         if (notifications.length === 0) return;
 
         try {
-            await axios.put(`http://localhost:5000/api/notifications/read-all/${user.id}`);
+            await axios.put(`https://campus-bridge-lms.onrender.com/api/notifications/read-all/${user.id}`);
             setNotifications(prev => prev.map(n => ({ ...n, is_read: 1 })));
             setUnreadCount(0);
         } catch (err) {
@@ -1384,7 +1384,7 @@ const StudentDashboard = () => {
         if (!window.confirm("Clear all notifications?")) return;
 
         try {
-            await axios.delete(`http://localhost:5000/api/notifications/clear/${user.id}`);
+            await axios.delete(`https://campus-bridge-lms.onrender.com/api/notifications/clear/${user.id}`);
             setNotifications([]);
             setUnreadCount(0);
         } catch (err) {

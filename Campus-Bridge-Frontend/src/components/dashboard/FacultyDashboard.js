@@ -61,7 +61,7 @@ const SettingsView = () => {
         e.preventDefault();
         if (passwordData.newPassword !== passwordData.confirm) return alert("Passwords do not match");
         try {
-            await axios.post("http://localhost:5000/api/faculty/update-password", passwordData);
+            await axios.post("https://campus-bridge-lms.onrender.com/api/faculty/update-password", passwordData);
             alert("Password updated successfully!");
             setPasswordData({ current: "", newPassword: "", confirm: "" });
         } catch (err) {
@@ -127,7 +127,7 @@ const CoursesView = ({ newCourse, setNewCourse, handleCreateCourse, handleDelete
 
     useEffect(() => {
         if (manageCourseId) {
-            axios.get(`http://localhost:5000/api/faculty/students/${manageCourseId}`)
+            axios.get(`https://campus-bridge-lms.onrender.com/api/faculty/students/${manageCourseId}`)
                 .then(res => setEnrolledStudents(res.data))
                 .catch(err => console.error(err));
         } else {
@@ -208,7 +208,7 @@ const AttendanceView = ({ courses, selectedCourseId, setSelectedCourseId, select
 
     const fetchStudentHistory = async (studentId, studentName) => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/faculty/attendance/history/${selectedCourseId}/${studentId}`);
+            const res = await axios.get(`https://campus-bridge-lms.onrender.com/api/faculty/attendance/history/${selectedCourseId}/${studentId}`);
             setHistoryModal({ open: true, studentName, records: res.data });
         } catch (err) {
             setHistoryModal({
@@ -597,7 +597,7 @@ const FacultyDashboard = () => {
 
     const fetchDashboardData = async (fid) => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/faculty/dashboard/${fid}`);
+            const res = await axios.get(`https://campus-bridge-lms.onrender.com/api/faculty/dashboard/${fid}`);
             setStats(res.data.stats);
             setCourses(res.data.courses);
             if (res.data.courses.length > 0 && !selectedCourseId) setSelectedCourseId(res.data.courses[0].id);
@@ -606,7 +606,7 @@ const FacultyDashboard = () => {
 
     const fetchAllPostedAttendance = async (fid) => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/faculty/attendance/all-records/${fid}`);
+            const res = await axios.get(`https://campus-bridge-lms.onrender.com/api/faculty/attendance/all-records/${fid}`);
             setAllPostedAttendance(res.data);
         } catch (err) {
             setAllPostedAttendance([
@@ -617,7 +617,7 @@ const FacultyDashboard = () => {
 
     const fetchStudentsAndAttendance = async (cid, date) => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/faculty/attendance/${cid}?date=${date}`);
+            const res = await axios.get(`https://campus-bridge-lms.onrender.com/api/faculty/attendance/${cid}?date=${date}`);
             setStudents(res.data.students || []);
             setIsAttendanceSaved(res.data.isAlreadyTaken || false);
         } catch (e) {
@@ -628,7 +628,7 @@ const FacultyDashboard = () => {
 
     const handleCreateCourse = async () => {
         try {
-            await axios.post("http://localhost:5000/api/faculty/create-course", { facultyId: faculty.id, courseName: newCourse.name, courseCode: newCourse.code });
+            await axios.post("https://campus-bridge-lms.onrender.com/api/faculty/create-course", { facultyId: faculty.id, courseName: newCourse.name, courseCode: newCourse.code });
             alert("Course Created!");
             fetchDashboardData(faculty.id);
             setNewCourse({ name: '', code: '' });
@@ -638,7 +638,7 @@ const FacultyDashboard = () => {
     const handleDeleteCourse = async (courseId) => {
         if (window.confirm("Are you sure you want to delete this course?")) {
             try {
-                await axios.delete(`http://localhost:5000/api/faculty/course/${courseId}`);
+                await axios.delete(`https://campus-bridge-lms.onrender.com/api/faculty/course/${courseId}`);
                 alert("Course Deleted");
                 fetchDashboardData(faculty.id);
             } catch (err) { alert("Failed to delete course"); }
@@ -647,7 +647,7 @@ const FacultyDashboard = () => {
 
     const handleEnroll = async (courseId, email) => {
         try {
-            await axios.post("http://localhost:5000/api/faculty/enroll", { courseId, studentEmail: email });
+            await axios.post("https://campus-bridge-lms.onrender.com/api/faculty/enroll", { courseId, studentEmail: email });
             alert("Student Enrolled!");
             fetchStudentsAndAttendance(courseId, selectedDate);
         } catch (err) { alert("Enrollment failed"); }
@@ -656,7 +656,7 @@ const FacultyDashboard = () => {
     const handleUnenroll = async (courseId, studentId) => {
         if (window.confirm("Remove this student from the course?")) {
             try {
-                await axios.post(`http://localhost:5000/api/faculty/unenroll`, { courseId, studentId });
+                await axios.post(`https://campus-bridge-lms.onrender.com/api/faculty/unenroll`, { courseId, studentId });
                 alert("Student removed");
                 fetchStudentsAndAttendance(courseId, selectedDate);
             } catch (err) { alert("Failed to unenroll"); }
@@ -665,7 +665,7 @@ const FacultyDashboard = () => {
 
     const fetchSchedule = async () => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/faculty/schedule/${faculty.id}`);
+            const res = await axios.get(`https://campus-bridge-lms.onrender.com/api/faculty/schedule/${faculty.id}`);
             setSchedule(res.data || []);
         } catch (e) { setSchedule([]); }
     };
@@ -673,7 +673,7 @@ const FacultyDashboard = () => {
     const handleAddClass = async () => {
         if (!newClass.courseId || !newClass.startTime || !newClass.endTime || !newClass.room) return alert("Fill all fields");
         try {
-            await axios.post("http://localhost:5000/api/faculty/schedule", {
+            await axios.post("https://campus-bridge-lms.onrender.com/api/faculty/schedule", {
                 facultyId: faculty.id, courseId: newClass.courseId, day_of_week: newClass.day,
                 start_time: newClass.startTime, end_time: newClass.endTime, room_number: newClass.room
             });
@@ -686,7 +686,7 @@ const FacultyDashboard = () => {
     const handleDeleteClass = async (classId) => {
         if (window.confirm("Remove this class?")) {
             try {
-                await axios.delete(`http://localhost:5000/api/faculty/schedule/${classId}`);
+                await axios.delete(`https://campus-bridge-lms.onrender.com/api/faculty/schedule/${classId}`);
                 fetchSchedule();
             } catch (err) { alert("Failed to delete class"); }
         }
@@ -694,7 +694,7 @@ const FacultyDashboard = () => {
 
     const fetchLeaves = async () => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/faculty/leaves/${faculty.id}`);
+            const res = await axios.get(`https://campus-bridge-lms.onrender.com/api/faculty/leaves/${faculty.id}`);
             setLeaves(res.data || []);
         } catch (err) {
             setLeaves([{ id: 1, studentName: "John Doe", courseName: "Advanced AI", fromDate: "2026-05-24", toDate: "2026-05-26", reason: "Medical Emergency", status: "Pending" }]);
@@ -703,7 +703,7 @@ const FacultyDashboard = () => {
 
     const handleLeaveAction = async (leaveId, status) => {
         try {
-            await axios.put(`http://localhost:5000/api/faculty/leaves/${leaveId}`, { status });
+            await axios.put(`https://campus-bridge-lms.onrender.com/api/faculty/leaves/${leaveId}`, { status });
             setLeaves(leaves.map(l => l.id === leaveId ? { ...l, status } : l));
             alert(`Leave request: ${status}`);
         } catch (err) { alert("Failed to process leave"); }
@@ -711,7 +711,7 @@ const FacultyDashboard = () => {
 
     const fetchSubmissions = async () => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/faculty/submissions/${faculty.id}`);
+            const res = await axios.get(`https://campus-bridge-lms.onrender.com/api/faculty/submissions/${faculty.id}`);
             setSubmissions(res.data || []);
         } catch (e) { setSubmissions([]); }
     };
@@ -719,7 +719,7 @@ const FacultyDashboard = () => {
     const handleGradeSubmission = async (sid, score, remark) => {
         if (!score) return alert("Please specify a validation grade metric.");
         try {
-            await axios.post("http://localhost:5000/api/faculty/grade", { submissionId: sid, score, remark });
+            await axios.post("https://campus-bridge-lms.onrender.com/api/faculty/grade", { submissionId: sid, score, remark });
             alert("Graded Successfully!");
             fetchSubmissions();
         } catch (err) { alert("Error saving evaluation record"); }
@@ -727,7 +727,7 @@ const FacultyDashboard = () => {
 
     const handleSaveAttendance = async (date) => {
         try {
-            await axios.post("http://localhost:5000/api/faculty/attendance", { courseId: selectedCourseId, date, students });
+            await axios.post("https://campus-bridge-lms.onrender.com/api/faculty/attendance", { courseId: selectedCourseId, date, students });
             alert("Attendance Record Synchronized!");
             setIsAttendanceSaved(true);
             fetchAllPostedAttendance(faculty.id);
@@ -740,7 +740,7 @@ const FacultyDashboard = () => {
     const handlePostAssignment = async () => {
         if (!newAssignment.courseId) return alert("Select a course");
         try {
-            await axios.post("http://localhost:5000/api/faculty/assignments", newAssignment);
+            await axios.post("https://campus-bridge-lms.onrender.com/api/faculty/assignments", newAssignment);
             alert("Assignment Synchronized!");
             setNewAssignment({ title: '', subject: '', due: '', type: 'Code', courseId: '', autoDeleteDate: '' });
         } catch (err) { alert("Failed to broadcast assignment structure"); }
@@ -752,7 +752,7 @@ const FacultyDashboard = () => {
         }
 
         try {
-            await axios.post("http://localhost:5000/api/coding/questions", {
+            await axios.post("https://campus-bridge-lms.onrender.com/api/coding/questions", {
                 title: newCodingQuestion.title,
                 company: newCodingQuestion.company,
                 difficulty: newCodingQuestion.difficulty,
