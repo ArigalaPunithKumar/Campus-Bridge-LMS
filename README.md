@@ -2,8 +2,8 @@
 
 **A role-based Learning Management System (LMS) built with React, Node.js, Express, and MySQL that centralizes academic management, online coding practice, AI-powered assistance, and administrative operations.**
 
-🔗 **Live Demo:** {{LIVE_URL}}
-📂 **Source Code:** {{GITHUB_REPO}}
+🔗 **Live Demo:** [LIVE_URL](https://campus-bridge-lms-alpha.vercel.app/auth)
+📂 **Source Code:**[GITHUB_REPO](https://github.com/ArigalaPunithKumar/Campus-Bridge-LMS)
 
 ---
 
