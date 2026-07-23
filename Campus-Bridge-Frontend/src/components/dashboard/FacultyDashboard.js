@@ -642,10 +642,15 @@ const FacultyDashboard = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location]);
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => { if (activeMenu === 'attendance' && selectedCourseId) fetchStudentsAndAttendance(selectedCourseId, selectedDate); }, [activeMenu, selectedCourseId, selectedDate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => { if (activeMenu === 'grading') fetchSubmissions(); }, [activeMenu]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => { if (activeMenu === 'leaves') fetchLeaves(); }, [activeMenu]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => { if (activeMenu === 'myLeaves') fetchMyLeaves(); }, [activeMenu]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => { if (activeMenu === 'schedule') fetchSchedule(); }, [activeMenu]);
 
     const fetchDashboardData = async (fid) => {
