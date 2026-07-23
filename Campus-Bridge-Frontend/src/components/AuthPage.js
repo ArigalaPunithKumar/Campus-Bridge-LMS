@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./Auth.css";
 import axios from "axios";
+import "../apiConfig";
 import {
     FaArrowLeft,
     FaEnvelope,

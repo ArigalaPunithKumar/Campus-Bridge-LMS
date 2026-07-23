@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
+import "../../apiConfig";
 import {
     FaBookOpen, FaCode, FaChartLine, FaSignOutAlt, FaBell, FaUserGraduate,
     FaFire, FaCalendarAlt, FaClock, FaMoon, FaSun, FaRobot,
@@ -449,8 +450,12 @@ const CodingArena = ({ user, onExit, selectedLanguage, setSelectedLanguage, code
     const [visitedQuestionIds, setVisitedQuestionIds] = useState([]);
     const [testSeconds, setTestSeconds] = useState(30 * 60 + 5);
     const [sectionSeconds, setSectionSeconds] = useState(25 * 60 + 7);
+    const [selectedTopic, setSelectedTopic] = useState("All");
 
-    const selectedIndex = questions.findIndex(question => question.id === selectedQuestion?.id);
+    const topics = ["All", ...new Set(questions.map(q => q.topic || "General"))];
+    const filteredQuestions = selectedTopic === "All" ? questions : questions.filter(q => (q.topic || "General") === selectedTopic);
+
+    const selectedIndex = filteredQuestions.findIndex(question => question.id === selectedQuestion?.id);
     const selectedNumber = selectedIndex >= 0 ? selectedIndex + 1 : 0;
     const publicPassed = runResults.filter(result => result.visibility === "public" && result.passed).length;
 
@@ -527,8 +532,8 @@ const CodingArena = ({ user, onExit, selectedLanguage, setSelectedLanguage, code
 
     const goToQuestion = (direction) => {
         const nextIndex = selectedIndex + direction;
-        if (nextIndex < 0 || nextIndex >= questions.length) return;
-        loadQuestionDetail(questions[nextIndex].id);
+        if (nextIndex < 0 || nextIndex >= filteredQuestions.length) return;
+        loadQuestionDetail(filteredQuestions[nextIndex].id);
     };
 
     const handleRunPublicTests = async () => {
@@ -682,7 +687,24 @@ const CodingArena = ({ user, onExit, selectedLanguage, setSelectedLanguage, code
             <div className="assessment-header">
                 <div>
                     <h1>Coding Assessment</h1>
-                    <p>{selectedQuestion ? `${selectedQuestion.company} coding question` : "Select a question to begin"}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '5px' }}>
+                        <select 
+                            value={selectedTopic} 
+                            onChange={(e) => {
+                                setSelectedTopic(e.target.value);
+                                const newFiltered = e.target.value === "All" ? questions : questions.filter(q => (q.topic || "General") === e.target.value);
+                                if (newFiltered.length > 0) {
+                                    loadQuestionDetail(newFiltered[0].id, selectedLanguage);
+                                } else {
+                                    setSelectedQuestion(null);
+                                }
+                            }}
+                            style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                        >
+                            {topics.map(t => <option key={t} value={t}>{t}</option>)}
+                        </select>
+                        <p style={{ margin: 0 }}>{selectedQuestion ? `${selectedQuestion.company} coding question` : "Select a topic/question to begin"}</p>
+                    </div>
                 </div>
                 <div className="assessment-header-actions">
                     <button className={`assessment-ai-btn ${showCodingAssistant ? "active" : ""}`} onClick={() => setShowCodingAssistant(prev => !prev)}>
@@ -700,7 +722,9 @@ const CodingArena = ({ user, onExit, selectedLanguage, setSelectedLanguage, code
 
             <div className="assessment-grid">
                 <section className={`problem-panel ${mobileTab === "question" ? "mobile-visible" : "mobile-hidden"}`}>
-                    {selectedQuestion ? (
+                    {filteredQuestions.length === 0 ? (
+                        <h3 className="no-data-text" style={{ padding: '20px', textAlign: 'center', color: '#666' }}>No coding questions available for this topic.</h3>
+                    ) : selectedQuestion ? (
                         <>
                             <h2>{selectedQuestion.title}</h2>
                             <span className="company-line">Company: {selectedQuestion.company}</span>
@@ -739,10 +763,10 @@ const CodingArena = ({ user, onExit, selectedLanguage, setSelectedLanguage, code
 
                 <section className={`coding-panel ${mobileTab === "code" ? "mobile-visible" : "mobile-hidden"}`}>
                     <div className="question-nav-row">
-                        <span>Question {selectedNumber || "-"} of {questions.length || "-"}</span>
+                        <span>Question {selectedNumber || "-"} of {filteredQuestions.length || "-"}</span>
                         <div>
                             <button onClick={() => goToQuestion(-1)} disabled={selectedIndex <= 0}>Previous</button>
-                            <button onClick={() => goToQuestion(1)} disabled={selectedIndex < 0 || selectedIndex >= questions.length - 1}>Next</button>
+                            <button onClick={() => goToQuestion(1)} disabled={selectedIndex < 0 || selectedIndex >= filteredQuestions.length - 1}>Next</button>
                         </div>
                     </div>
                     <div className="assessment-editor-card">
@@ -1119,6 +1143,10 @@ const LeaveApplicationView = ({ user, courses }) => {
 };
 
 const SettingsView = ({ settings, setSettings, user }) => {
+    const [showPasswordForm, setShowPasswordForm] = useState(false);
+    const [passwordData, setPasswordData] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    const [passwordMsg, setPasswordMsg] = useState("");
+
     const toggleSetting = async (key) => {
         const newSettings = { ...settings, [key]: !settings[key] };
         setSettings(newSettings);
@@ -1126,6 +1154,26 @@ const SettingsView = ({ settings, setSettings, user }) => {
         try {
             await axios.put(`https://campus-bridge-lms.onrender.com/api/student/settings/${user.id}`, newSettings);
         } catch (err) { console.error("Failed to save setting"); }
+    };
+
+    const handlePasswordChange = async (e) => {
+        e.preventDefault();
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            setPasswordMsg("New passwords do not match.");
+            return;
+        }
+        try {
+            const res = await axios.post("https://campus-bridge-lms.onrender.com/api/auth/change-password", {
+                userId: user.id,
+                currentPassword: passwordData.currentPassword,
+                newPassword: passwordData.newPassword
+            });
+            setPasswordMsg(res.data.msg);
+            setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+            setTimeout(() => { setShowPasswordForm(false); setPasswordMsg(""); }, 2000);
+        } catch (err) {
+            setPasswordMsg(err.response?.data?.msg || "Error changing password");
+        }
     };
 
     return (
@@ -1177,9 +1225,22 @@ const SettingsView = ({ settings, setSettings, user }) => {
 
                 <div className="settings-section security-section">
                     <div className="section-header"><FaShieldAlt /> Security</div>
-                    <div className="settings-group">
-                        <button className="btn-setting-action"><FaLock /> Change Password</button>
-                        <button className="btn-setting-action danger"><FaSignOutAlt /> Sign out of all devices</button>
+                    <div className="settings-group" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                        {!showPasswordForm ? (
+                            <button className="btn-setting-action" onClick={() => setShowPasswordForm(true)}><FaLock /> Change Password</button>
+                        ) : (
+                            <form onSubmit={handlePasswordChange} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <input type="password" placeholder="Current Password" required value={passwordData.currentPassword} onChange={e => setPasswordData({ ...passwordData, currentPassword: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }} />
+                                <input type="password" placeholder="New Password" required value={passwordData.newPassword} onChange={e => setPasswordData({ ...passwordData, newPassword: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }} />
+                                <input type="password" placeholder="Confirm New Password" required value={passwordData.confirmPassword} onChange={e => setPasswordData({ ...passwordData, confirmPassword: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }} />
+                                <div style={{ display: 'flex', gap: '10px' }}>
+                                    <button type="submit" className="btn-setting-action" style={{ background: '#2563eb', color: 'white', flex: 1 }}>Update</button>
+                                    <button type="button" className="btn-setting-action" style={{ background: '#eee', flex: 1 }} onClick={() => { setShowPasswordForm(false); setPasswordMsg(""); }}>Cancel</button>
+                                </div>
+                                {passwordMsg && <p style={{ color: passwordMsg.includes("success") ? "green" : "red", fontSize: '0.9em', margin: 0 }}>{passwordMsg}</p>}
+                            </form>
+                        )}
+                        <button className="btn-setting-action danger" style={{ marginTop: '10px' }}><FaSignOutAlt /> Sign out of all devices</button>
                     </div>
                 </div>
             </div>
@@ -1208,6 +1269,56 @@ const ChatAssistant = ({ showAssistant, setShowAssistant, code, language, mode =
 
     useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, showAssistant]);
 
+    const getLocalReply = (questionText) => {
+        const text = (questionText || "").toLowerCase();
+
+        if (isCodingMode) {
+            if (text.includes("hint") || text.includes("approach")) {
+                return "Start from the input format, solve the sample manually, then convert that logic into code. Keep the output format exactly the same as the sample.";
+            }
+            if (text.includes("error") || text.includes("wrong") || text.includes("bug")) {
+                return "Check three things first: are you reading input from standard input, are variable types correct, and does your output have the exact spaces/new lines required?";
+            }
+            if (text.includes("input") || text.includes("output")) {
+                return "Enable custom input, enter your test input, optionally add expected output, then click Run code. The system will show if your output matched.";
+            }
+            return "Run the public tests first. If one fails, compare expected and actual output, fix that case, then submit for private test evaluation.";
+        }
+
+        const assignments = dashboardContext?.assignments || [];
+        const courses = dashboardContext?.courses || [];
+        const attendance = dashboardContext?.attendanceData || [];
+        const schedule = dashboardContext?.schedule || [];
+
+        if (text.includes("attendance")) {
+            const avg = attendance.length
+                ? Math.round(attendance.reduce((sum, item) => sum + ((item.attended || 0) / Math.max(item.total || 1, 1)) * 100, 0) / attendance.length)
+                : 0;
+            return `Your average attendance is around ${avg}%. Open the Attendance section to see the subject-wise colorful chart.`;
+        }
+        if (text.includes("assignment") || text.includes("submit")) {
+            const pending = assignments.filter(item => item.status === "pending").length;
+            return `You have ${pending} pending assignment${pending === 1 ? "" : "s"}. Open Assignments, upload your work, and submit before the due date.`;
+        }
+        if (text.includes("leave")) {
+            return "Open Apply Leave, select the course, choose from/to dates, enter your reason, and submit. Faculty can approve or deny it, and you will get a notification.";
+        }
+        if (text.includes("timetable") || text.includes("schedule") || text.includes("class")) {
+            return schedule.length ? "Open Timetable to see your weekly classes. Today's schedule is also shown on the dashboard." : "No timetable is loaded for your account yet. Ask faculty or admin to publish it.";
+        }
+        if (text.includes("course")) {
+            return `You are enrolled in ${courses.length} course${courses.length === 1 ? "" : "s"}. Use the dashboard search to find a course quickly.`;
+        }
+        if (text.includes("notification")) {
+            return "Use the bell icon to see notifications. You can mark all as read or clear all from the dropdown.";
+        }
+        if (text.includes("password") || text.includes("reset")) {
+            return "Use Forgot Password on the login page, enter your registered email, verify the OTP, and then create a new password.";
+        }
+
+        return "I can help with attendance, assignments, timetable, leave requests, notifications, courses, password reset, and coding practice. Ask me what you want to do.";
+    };
+
     const handleSend = async (presetText) => {
         const finalInput = presetText || input;
         if (!finalInput.trim()) return;
@@ -1226,7 +1337,7 @@ const ChatAssistant = ({ showAssistant, setShowAssistant, code, language, mode =
             });
             setMessages(prev => [...prev, { role: 'bot', text: res.data.reply }]);
         } catch (error) {
-            setMessages(prev => [...prev, { role: 'bot', text: isCodingMode ? "I could not connect right now. Try running your public tests and ask again with the error text." : "I could not connect right now. Try again in a moment." }]);
+            setMessages(prev => [...prev, { role: 'bot', text: getLocalReply(finalInput) }]);
         } finally {
             setIsLoading(false);
         }
@@ -1275,6 +1386,40 @@ const ChatAssistant = ({ showAssistant, setShowAssistant, code, language, mode =
     );
 };
 
+const LearnView = ({ courses }) => {
+    return (
+        <motion.div className="assignments-container" variants={pageVariants} initial="initial" animate="in" exit="out">
+            <div className="assignments-header">
+                <h2>Learn Tech</h2>
+                <p>Curated technical courses to enhance your skills.</p>
+            </div>
+            <div className="course-grid">
+                {courses.length === 0 ? (
+                    <p className="no-data-text">No courses available at the moment.</p>
+                ) : (
+                    courses.map(course => (
+                        <div key={course.id} className="card-section course-video-card">
+                            <div className="video-wrapper">
+                                <iframe 
+                                    src={course.video_url} 
+                                    title={course.title} 
+                                    frameBorder="0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                    allowFullScreen>
+                                </iframe>
+                            </div>
+                            <div className="course-info">
+                                <h4>{course.title}</h4>
+                                <small>{course.channel_name} • {course.category}</small>
+                            </div>
+                        </div>
+                    ))
+                )}
+            </div>
+        </motion.div>
+    );
+};
+
 const StudentDashboard = () => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -1303,6 +1448,7 @@ const StudentDashboard = () => {
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [streak, setStreak] = useState({ currentStreak: 1, longestStreak: 1, lastActiveDate: null });
+    const [youtubeCourses, setYoutubeCourses] = useState([]);
 
     const [selectedLanguage, setSelectedLanguage] = useState("javascript");
     const [code, setCode] = useState("// Write your solution here...\nconsole.log('Hello Campus Bridge!');");
@@ -1326,10 +1472,11 @@ const StudentDashboard = () => {
         const initFetch = async () => {
             setIsLoading(true);
             try {
-                const [dashRes, notifRes, schedRes] = await Promise.all([
+                const [dashRes, notifRes, schedRes, ytRes] = await Promise.all([
                     axios.get(`https://campus-bridge-lms.onrender.com/api/student/dashboard/${currentUser.id}`),
                     axios.get(`https://campus-bridge-lms.onrender.com/api/notifications/${currentUser.id}`),
-                    axios.get(`https://campus-bridge-lms.onrender.com/api/student/schedule/${currentUser.id}`)
+                    axios.get(`https://campus-bridge-lms.onrender.com/api/student/schedule/${currentUser.id}`),
+                    axios.get(`https://campus-bridge-lms.onrender.com/api/student/youtube-courses`)
                 ]);
                 setCourses(dashRes.data.courses || []);
                 setAssignments(dashRes.data.assignments || []);
@@ -1337,6 +1484,7 @@ const StudentDashboard = () => {
                 setNotifications(notifRes.data || []);
                 setUnreadCount(notifRes.data ? notifRes.data.filter(n => !n.is_read).length : 0);
                 setSchedule(schedRes.data || []);
+                setYoutubeCourses(ytRes.data || []);
             } catch (err) { console.error(err); }
             try {
                 const streakRes = await axios.get(`https://campus-bridge-lms.onrender.com/api/student/streak/${currentUser.id}`);
@@ -1409,6 +1557,7 @@ const StudentDashboard = () => {
                     <NavItem icon={<FaChartLine />} label="Dashboard" active={activeMenu === "dashboard"} onClick={() => setActiveMenu("dashboard")} />
                     <NavItem icon={<FaCalendarAlt />} label="Timetable" active={activeMenu === "schedule"} onClick={() => setActiveMenu("schedule")} />
                     <NavItem icon={<FaCode />} label="Coding Practice" active={activeMenu === "compiler"} onClick={() => setActiveMenu("compiler")} />
+                    <NavItem icon={<FaPlay />} label="Learn" active={activeMenu === "learn"} onClick={() => setActiveMenu("learn")} />
                     <NavItem icon={<FaCheckCircle />} label="Attendance" active={activeMenu === "attendance"} onClick={() => setActiveMenu("attendance")} />
                     <NavItem icon={<FaEnvelopeOpenText />} label="Apply Leave" active={activeMenu === "leave"} onClick={() => setActiveMenu("leave")} />
                     <NavItem icon={<FaBookOpen />} label="Assignments" active={activeMenu === "assignments"} onClick={() => setActiveMenu("assignments")} />
@@ -1465,6 +1614,7 @@ const StudentDashboard = () => {
                     <AnimatePresence mode="wait">
                         {activeMenu === "dashboard" && <DashboardHome user={user} currentTime={currentTime} courses={courses} assignments={assignments} attendanceData={attendanceData} schedule={schedule} searchTerm={searchTerm} isLoading={isLoading} streak={streak} onOpenAssistant={() => setShowAssistant(true)} />}
                         {activeMenu === "schedule" && <TimetableView schedule={schedule} />}
+                        {activeMenu === "learn" && <LearnView courses={youtubeCourses} />}
                         {activeMenu === "compiler" && <CodingArena user={user} onExit={() => setActiveMenu("dashboard")} selectedLanguage={selectedLanguage} setSelectedLanguage={setSelectedLanguage} code={code} setCode={setCode} isRunning={isRunning} setIsRunning={setIsRunning} compilerInput={compilerInput} setCompilerInput={setCompilerInput} compilerOutput={compilerOutput} setCompilerOutput={setCompilerOutput} />}
                         {activeMenu === "attendance" && <AttendanceAnalytics attendanceData={attendanceData} />}
                         {activeMenu === "leave" && <LeaveApplicationView user={user} courses={courses} />}

@@ -324,3 +324,24 @@ exports.getStreak = async (req, res) => {
         res.status(500).json({ msg: "Server error fetching streak" });
     }
 };
+
+/* =========================================
+   9. GET YOUTUBE COURSES
+   ========================================= */
+exports.getYoutubeCourses = async (req, res) => {
+    try {
+        const courses = await query("SELECT * FROM youtube_courses ORDER BY id DESC");
+        // Fallback static courses if empty (so something is always visible)
+        if (courses.length === 0) {
+            return res.json([
+                { id: 101, title: "HTML & CSS Full Course", channel_name: "SuperSimpleDev", video_url: "https://www.youtube.com/embed/G3e-cpL7ofc", category: "Web Development" },
+                { id: 102, title: "JavaScript Tutorial for Beginners", channel_name: "Programming with Mosh", video_url: "https://www.youtube.com/embed/W6NZfCO5SIk", category: "Programming" },
+                { id: 103, title: "React JS Crash Course", channel_name: "Traversy Media", video_url: "https://www.youtube.com/embed/w7ejDZ8SWv8", category: "Frontend" }
+            ]);
+        }
+        res.json(courses);
+    } catch (err) {
+        console.error("Get Youtube Courses Error:", err);
+        res.status(500).json({ msg: "Server error fetching courses" });
+    }
+};

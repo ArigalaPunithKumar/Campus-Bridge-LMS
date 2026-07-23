@@ -53,19 +53,25 @@ const ProfileView = ({ faculty }) => (
     </motion.div>
 );
 
-const SettingsView = () => {
+const SettingsView = ({ user }) => {
     const [passwordData, setPasswordData] = useState({ current: "", newPassword: "", confirm: "" });
     const [notifications, setNotifications] = useState({ emailAlerts: true, classReminders: true });
+    const [passwordMsg, setPasswordMsg] = useState("");
 
     const handlePasswordUpdate = async (e) => {
         e.preventDefault();
-        if (passwordData.newPassword !== passwordData.confirm) return alert("Passwords do not match");
+        if (passwordData.newPassword !== passwordData.confirm) return setPasswordMsg("Passwords do not match");
         try {
-            await axios.post("https://campus-bridge-lms.onrender.com/api/faculty/update-password", passwordData);
-            alert("Password updated successfully!");
+            const res = await axios.post("https://campus-bridge-lms.onrender.com/api/auth/change-password", {
+                userId: user.id,
+                currentPassword: passwordData.current,
+                newPassword: passwordData.newPassword
+            });
+            setPasswordMsg(res.data.msg);
             setPasswordData({ current: "", newPassword: "", confirm: "" });
+            setTimeout(() => setPasswordMsg(""), 3000);
         } catch (err) {
-            alert("Failed to update password");
+            setPasswordMsg(err.response?.data?.msg || "Failed to update password");
         }
     };
 
@@ -91,6 +97,7 @@ const SettingsView = () => {
                             <input type="password" value={passwordData.confirm} onChange={e => setPasswordData({ ...passwordData, confirm: e.target.value })} required />
                         </div>
                         <button type="submit" className="btn-primary">Update Password</button>
+                        {passwordMsg && <p style={{ color: passwordMsg.includes("success") ? "green" : "red", marginTop: '10px' }}>{passwordMsg}</p>}
                     </form>
                 </div>
 
@@ -347,6 +354,36 @@ const LeavesView = ({ leaves, handleLeaveAction }) => (
     </motion.div>
 );
 
+const MyLeavesView = ({ myLeaves, newLeave, setNewLeave, handleApplyLeave }) => (
+    <motion.div variants={containerVariants} initial="hidden" animate="visible" exit="exit" className="section-container">
+        <h3 className="section-title"><FaEnvelopeOpenText /> Apply for Leave</h3>
+        <div className="card-form mb-20">
+            <div className="form-row">
+                <div className="form-group"><label>From Date</label><input type="date" value={newLeave.fromDate} onChange={e => setNewLeave({ ...newLeave, fromDate: e.target.value })} /></div>
+                <div className="form-group"><label>To Date</label><input type="date" value={newLeave.toDate} onChange={e => setNewLeave({ ...newLeave, toDate: e.target.value })} /></div>
+            </div>
+            <div className="form-group"><label>Reason</label><textarea value={newLeave.reason} onChange={e => setNewLeave({ ...newLeave, reason: e.target.value })} /></div>
+            <motion.button whileHover={{ scale: 1.02 }} className="submit-btn" onClick={handleApplyLeave}>Apply for Leave</motion.button>
+        </div>
+
+        <h3 className="section-title">My Leave History</h3>
+        <div className="table-responsive">
+            <table className="dashboard-table">
+                <thead><tr><th>Dates</th><th>Reason</th><th>Status</th></tr></thead>
+                <tbody>
+                    {myLeaves.length === 0 ? <tr><td colSpan="3" style={{ textAlign: 'center' }}>No leave history.</td></tr> : myLeaves.map(leave => (
+                        <tr key={leave.id}>
+                            <td>{leave.fromDate} to {leave.toDate}</td>
+                            <td className="reason-cell">{leave.reason}</td>
+                            <td><span className={`status-badge ${leave.status.toLowerCase()}`}>{leave.status}</span></td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    </motion.div>
+);
+
 const ScheduleView = ({ newClass, setNewClass, courses, handleAddClass, handleDeleteClass, schedule }) => (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" exit="exit" className="section-container">
         <div className="card-form">
@@ -432,6 +469,10 @@ const CodingQuestionsView = ({ newCodingQuestion, setNewCodingQuestion, handlePo
                 <div className="form-group">
                     <label>Company</label>
                     <input placeholder="e.g. TCS, Google" value={newCodingQuestion.company} onChange={e => setNewCodingQuestion({ ...newCodingQuestion, company: e.target.value })} />
+                </div>
+                <div className="form-group">
+                    <label>Topic</label>
+                    <input placeholder="e.g. Arrays, Strings" value={newCodingQuestion.topic} onChange={e => setNewCodingQuestion({ ...newCodingQuestion, topic: e.target.value })} />
                 </div>
                 <div className="form-group">
                     <label>Difficulty</label>
@@ -559,6 +600,7 @@ const FacultyDashboard = () => {
     const [schedule, setSchedule] = useState([]);
     const [submissions, setSubmissions] = useState([]);
     const [leaves, setLeaves] = useState([]);
+    const [myLeaves, setMyLeaves] = useState([]);
     const [allPostedAttendance, setAllPostedAttendance] = useState([]);
 
     const [selectedCourseId, setSelectedCourseId] = useState("");
@@ -571,6 +613,7 @@ const FacultyDashboard = () => {
     const [newCodingQuestion, setNewCodingQuestion] = useState({
         title: "Checkerboard Pattern",
         company: "TCS",
+        topic: "General",
         difficulty: "Easy",
         description: "You are given an integer n. Print an n x n square pattern filled with alternating 0s and 1s.",
         inputFormat: "The first line contains a single integer n.",
@@ -582,6 +625,7 @@ const FacultyDashboard = () => {
         privateOutput: "0 1 0 1\n1 0 1 0\n0 1 0 1\n1 0 1 0",
         javaStarter: "import java.util.*;\n\nclass Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Your code here\n    }\n}"
     });
+    const [newLeave, setNewLeave] = useState({ fromDate: "", toDate: "", reason: "" });
 
     useEffect(() => {
         const user = location.state?.user || {
@@ -598,35 +642,11 @@ const FacultyDashboard = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location]);
 
-    useEffect(() => {
-        if (activeMenu === "attendance" && selectedCourseId) {
-            fetchStudentsAndAttendance(selectedCourseId, selectedDate);
-        }
-    }, [activeMenu, selectedCourseId, selectedDate]);
-
-    useEffect(() => {
-        if (activeMenu === "grading") {
-            fetchSubmissions();
-        }
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeMenu]);
-
-    useEffect(() => {
-        if (activeMenu === "leaves") {
-            fetchLeaves();
-        }
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeMenu]);
-
-    useEffect(() => {
-        if (activeMenu === "schedule") {
-            fetchSchedule();
-        }
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeMenu]);
+    useEffect(() => { if (activeMenu === 'attendance' && selectedCourseId) fetchStudentsAndAttendance(selectedCourseId, selectedDate); }, [activeMenu, selectedCourseId, selectedDate]);
+    useEffect(() => { if (activeMenu === 'grading') fetchSubmissions(); }, [activeMenu]);
+    useEffect(() => { if (activeMenu === 'leaves') fetchLeaves(); }, [activeMenu]);
+    useEffect(() => { if (activeMenu === 'myLeaves') fetchMyLeaves(); }, [activeMenu]);
+    useEffect(() => { if (activeMenu === 'schedule') fetchSchedule(); }, [activeMenu]);
 
     const fetchDashboardData = async (fid) => {
         try {
@@ -639,11 +659,11 @@ const FacultyDashboard = () => {
 
     const fetchAllPostedAttendance = async (fid) => {
         try {
-            const res = await axios.get(`https://campus-bridge-lms.onrender.com/api/faculty/attendance/all-records/${fid}`);
+            const res = await axios.get(`https://campus-bridge-lms.onrender.com/api/faculty/attendance-history/${fid}`);
             setAllPostedAttendance(res.data);
         } catch (err) {
             setAllPostedAttendance([
-                { course_name: "Advanced AI", date: "2026-05-25", student_count: 42 }
+                { course_name: "Advanced AI", date: "2026-05-25", student_count: 42, present_count: 40 }
             ]);
         }
     };
@@ -713,7 +733,14 @@ const FacultyDashboard = () => {
             alert("Class Scheduled!");
             fetchSchedule();
             setNewClass({ courseId: "", day: "Monday", startTime: "", endTime: "", room: "" });
-        } catch (err) { alert("Failed to add class"); }
+        } catch (err) { alert("Failed to schedule class"); }
+    };
+
+    const fetchMyLeaves = async () => {
+        try {
+            const res = await axios.get(`https://campus-bridge-lms.onrender.com/api/faculty/my-leaves/${faculty.id}`);
+            setMyLeaves(res.data);
+        } catch (err) { alert("Failed to fetch my leaves"); }
     };
 
     const handleDeleteClass = async (classId) => {
@@ -785,9 +812,10 @@ const FacultyDashboard = () => {
         }
 
         try {
-            await axios.post("https://campus-bridge-lms.onrender.com/api/coding/questions", {
+            const payload = {
                 title: newCodingQuestion.title,
                 company: newCodingQuestion.company,
+                topic: newCodingQuestion.topic,
                 difficulty: newCodingQuestion.difficulty,
                 description: newCodingQuestion.description,
                 inputFormat: newCodingQuestion.inputFormat,
@@ -798,11 +826,22 @@ const FacultyDashboard = () => {
                 privateTests: newCodingQuestion.privateInput && newCodingQuestion.privateOutput
                     ? [{ input: newCodingQuestion.privateInput, expectedOutput: newCodingQuestion.privateOutput }]
                     : []
-            });
+            };
+            await axios.post("https://campus-bridge-lms.onrender.com/api/coding/questions", payload);
             alert("Coding question posted. Students will see it in Coding Practice.");
         } catch (err) {
             alert(err.response?.data?.msg || "Failed to post coding question");
         }
+    };
+
+    const handleApplyLeave = async () => {
+        if (!newLeave.fromDate || !newLeave.toDate || !newLeave.reason) return alert("Fill all leave fields");
+        try {
+            await axios.post("https://campus-bridge-lms.onrender.com/api/faculty/apply-leave", { ...newLeave, facultyId: faculty.id });
+            alert("Leave Applied Successfully!");
+            setNewLeave({ fromDate: "", toDate: "", reason: "" });
+            fetchMyLeaves();
+        } catch (err) { alert("Failed to apply for leave"); }
     };
 
     return (
@@ -820,7 +859,8 @@ const FacultyDashboard = () => {
                     <div className={`menu-item ${activeMenu === 'assignments' ? 'active' : ''}`} onClick={() => { setActiveMenu('assignments'); setIsSidebarOpen(false); }}><FaPlus /> Assignments</div>
                     <div className={`menu-item ${activeMenu === 'codingQuestions' ? 'active' : ''}`} onClick={() => { setActiveMenu('codingQuestions'); setIsSidebarOpen(false); }}><FaCode /> Coding Questions</div>
                     <div className={`menu-item ${activeMenu === 'attendance' ? 'active' : ''}`} onClick={() => { setActiveMenu('attendance'); setIsSidebarOpen(false); }}><FaUserCheck /> Attendance</div>
-                    <div className={`menu-item ${activeMenu === 'leaves' ? 'active' : ''}`} onClick={() => { setActiveMenu('leaves'); setIsSidebarOpen(false); }}><FaEnvelopeOpenText /> Leaves</div>
+                    <div className={`menu-item ${activeMenu === 'myLeaves' ? 'active' : ''}`} onClick={() => { setActiveMenu('myLeaves'); setIsSidebarOpen(false); }}><FaEnvelopeOpenText /> Apply Leave</div>
+                    <div className={`menu-item ${activeMenu === 'leaves' ? 'active' : ''}`} onClick={() => { setActiveMenu('leaves'); setIsSidebarOpen(false); }}><FaEnvelopeOpenText /> Student Leaves</div>
                     <div className={`menu-item ${activeMenu === 'grading' ? 'active' : ''}`} onClick={() => { setActiveMenu('grading'); setIsSidebarOpen(false); }}><FaGraduationCap /> Grading</div>
                     <div className={`menu-item ${activeMenu === 'schedule' ? 'active' : ''}`} onClick={() => { setActiveMenu('schedule'); setIsSidebarOpen(false); }}><FaCalendarAlt /> Schedule</div>
                     <div className={`menu-item ${activeMenu === 'settings' ? 'active' : ''}`} onClick={() => { setActiveMenu('settings'); setIsSidebarOpen(false); }}><FaCog /> Settings</div>
@@ -847,10 +887,11 @@ const FacultyDashboard = () => {
                         {activeMenu === 'assignments' && <AssignmentsView {...{ newAssignment, setNewAssignment, handlePostAssignment, courses }} />}
                         {activeMenu === 'codingQuestions' && <CodingQuestionsView {...{ newCodingQuestion, setNewCodingQuestion, handlePostCodingQuestion }} />}
                         {activeMenu === 'attendance' && <AttendanceView {...{ courses, selectedCourseId, setSelectedCourseId, selectedDate, setSelectedDate, handleSaveAttendance, students, toggleAttendance, updateRemark, isAttendanceSaved, allPostedAttendance }} />}
+                        {activeMenu === 'myLeaves' && <MyLeavesView {...{ myLeaves, newLeave, setNewLeave, handleApplyLeave }} />}
                         {activeMenu === 'leaves' && <LeavesView {...{ leaves, handleLeaveAction }} />}
                         {activeMenu === 'grading' && <GradingView submissions={submissions} handleGradeSubmission={handleGradeSubmission} refreshSubmissions={fetchSubmissions} />}
                         {activeMenu === 'schedule' && <ScheduleView {...{ newClass, setNewClass, courses, handleAddClass, handleDeleteClass, schedule }} />}
-                        {activeMenu === 'settings' && <SettingsView />}
+                        {activeMenu === 'settings' && <SettingsView user={faculty} />}
                     </AnimatePresence>
                 </div>
             </main>

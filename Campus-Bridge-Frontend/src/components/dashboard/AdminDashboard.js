@@ -12,6 +12,7 @@ import {
     FaEdit,
     FaEye,
     FaKey,
+    FaLock,
     FaPlus,
     FaSearch,
     FaShieldAlt,
@@ -23,7 +24,9 @@ import {
     FaTrashAlt,
     FaUserGraduate,
     FaUserShield,
-    FaUsers
+    FaUsers,
+    FaVideo,
+    FaEnvelopeOpenText
 } from "react-icons/fa";
 import "./AdminDashboard.css";
 
@@ -60,6 +63,29 @@ const AdminDashboard = () => {
         system_notifications: true
     });
 
+    const [facultyLeaves, setFacultyLeaves] = useState([]);
+    const [youtubeCourses, setYoutubeCourses] = useState([]);
+    const [youtubeForm, setYoutubeForm] = useState({ title: "", video_id: "", description: "" });
+    const [passwordData, setPasswordData] = useState({ current: "", newPassword: "", confirm: "" });
+    const [passwordMsg, setPasswordMsg] = useState("");
+
+    const handlePasswordUpdate = async (e) => {
+        e.preventDefault();
+        if (passwordData.newPassword !== passwordData.confirm) return setPasswordMsg("Passwords do not match");
+        try {
+            const res = await axios.post("https://campus-bridge-lms.onrender.com/api/auth/change-password", {
+                userId: admin.id,
+                currentPassword: passwordData.current,
+                newPassword: passwordData.newPassword
+            });
+            setPasswordMsg(res.data.msg);
+            setPasswordData({ current: "", newPassword: "", confirm: "" });
+            setTimeout(() => setPasswordMsg(""), 3000);
+        } catch (err) {
+            setPasswordMsg(err.response?.data?.msg || "Failed to update password");
+        }
+    };
+
     const [viewUser, setViewUser] = useState(null);
     const [userProgress, setUserProgress] = useState(null);
     const [loadingProgress, setLoadingProgress] = useState(false);
@@ -92,12 +118,14 @@ const AdminDashboard = () => {
         setLoading(true);
         setError(null);
         try {
-            const [statsRes, usersRes, analyticsRes, coursesRes, settingsRes] = await Promise.all([
+            const [statsRes, usersRes, analyticsRes, coursesRes, settingsRes, leavesRes, youtubeRes] = await Promise.all([
                 axios.get(`${API_BASE}/stats`),
                 axios.get(`${API_BASE}/users`),
                 axios.get(`${API_BASE}/analytics`),
                 axios.get(`${API_BASE}/courses`),
-                axios.get(`${API_BASE}/settings`)
+                axios.get(`${API_BASE}/settings`),
+                axios.get(`${API_BASE}/faculty-leaves`),
+                axios.get(`${API_BASE}/youtube-courses`)
             ]);
 
             setStats(statsRes.data || { total: 0, students: 0, faculty: 0, active: 0 });
@@ -105,6 +133,8 @@ const AdminDashboard = () => {
             setAnalytics(analyticsRes.data || {});
             setCourses(Array.isArray(coursesRes.data) ? coursesRes.data : []);
             setConfig(settingsRes.data || {});
+            setFacultyLeaves(Array.isArray(leavesRes.data) ? leavesRes.data : []);
+            setYoutubeCourses(Array.isArray(youtubeRes.data) ? youtubeRes.data : []);
         } catch (err) {
             console.error("Admin dashboard load failed:", err);
             setError("Failed to load admin data. Please make sure the backend and database are connected.");
@@ -163,9 +193,44 @@ const AdminDashboard = () => {
         try {
             const res = await axios.post(`${API_BASE}/settings/toggle`, { key });
             setConfig(prev => ({ ...prev, [key]: res.data.newValue }));
-            showNotice("success", "Setting updated.");
+            showNotice("success", "Settings updated successfully.");
         } catch (err) {
-            showNotice("error", err.response?.data?.msg || "Failed to update setting.");
+            showNotice("error", "Failed to update settings.");
+        }
+    };
+
+    const handleFacultyLeaveAction = async (leaveId, status) => {
+        try {
+            await axios.put(`${API_BASE}/faculty-leaves/${leaveId}`, { status });
+            setFacultyLeaves(facultyLeaves.map(l => l.id === leaveId ? { ...l, status } : l));
+            showNotice("success", `Leave marked as ${status}`);
+        } catch (err) {
+            showNotice("error", "Failed to process leave request");
+        }
+    };
+
+    const handleAddYoutubeCourse = async (e) => {
+        e.preventDefault();
+        if (!youtubeForm.title || !youtubeForm.video_id) return showNotice("error", "Title and Video ID required.");
+        try {
+            await axios.post(`${API_BASE}/youtube-courses`, youtubeForm);
+            showNotice("success", "YouTube Course added!");
+            setYoutubeForm({ title: "", video_id: "", description: "" });
+            const res = await axios.get(`${API_BASE}/youtube-courses`);
+            setYoutubeCourses(res.data);
+        } catch (err) {
+            showNotice("error", "Failed to add course.");
+        }
+    };
+
+    const handleDeleteYoutubeCourse = async (id) => {
+        if (!window.confirm("Remove this YouTube course?")) return;
+        try {
+            await axios.delete(`${API_BASE}/youtube-courses/${id}`);
+            setYoutubeCourses(youtubeCourses.filter(c => c.id !== id));
+            showNotice("success", "Course deleted.");
+        } catch (err) {
+            showNotice("error", "Failed to delete course.");
         }
     };
 
@@ -516,6 +581,115 @@ const AdminDashboard = () => {
         </div>
     );
 
+    const renderFacultyLeavesView = () => (
+        <div className="content-card">
+            <div className="card-header">
+                <div>
+                    <h2>Faculty Leave Requests</h2>
+                    <p>Approve or deny faculty leave applications.</p>
+                </div>
+            </div>
+            <div className="table-responsive padding-wrapper">
+                <table className="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Faculty Name</th>
+                            <th>Dates</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {facultyLeaves.length === 0 ? (
+                            <tr><td colSpan="5" className="empty-state">No pending leave requests.</td></tr>
+                        ) : (
+                            facultyLeaves.map(leave => (
+                                <tr key={leave.id}>
+                                    <td><strong>{leave.facultyName}</strong></td>
+                                    <td>{leave.fromDate} to {leave.toDate}</td>
+                                    <td className="reason-cell">{leave.reason}</td>
+                                    <td><span className={`status-badge ${leave.status.toLowerCase()}`}>{leave.status}</span></td>
+                                    <td>
+                                        {leave.status === 'Pending' ? (
+                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                <button className="btn-primary" style={{ padding: '6px 10px', fontSize: '13px' }} onClick={() => handleFacultyLeaveAction(leave.id, 'Approved')}>Approve</button>
+                                                <button className="btn-secondary" style={{ padding: '6px 10px', fontSize: '13px', borderColor: '#ef4444', color: '#ef4444' }} onClick={() => handleFacultyLeaveAction(leave.id, 'Denied')}>Deny</button>
+                                            </div>
+                                        ) : (
+                                            <span style={{ color: '#64748b', fontSize: '13px' }}>Resolved</span>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+
+    const renderYouTubeCoursesView = () => (
+        <div className="content-card">
+            <div className="card-header">
+                <div>
+                    <h2>YouTube Courses</h2>
+                    <p>Manage free video courses available to students in their Learn tab.</p>
+                </div>
+            </div>
+            <form className="course-admin-form" onSubmit={handleAddYoutubeCourse}>
+                <div className="form-field">
+                    <label>Course Title</label>
+                    <input value={youtubeForm.title} onChange={e => setYoutubeForm({ ...youtubeForm, title: e.target.value })} placeholder="e.g. Complete React Tutorial" />
+                </div>
+                <div className="form-field">
+                    <label>YouTube Video ID</label>
+                    <input value={youtubeForm.video_id} onChange={e => setYoutubeForm({ ...youtubeForm, video_id: e.target.value })} placeholder="e.g. dGcsHMXbSOA" />
+                </div>
+                <div className="form-field">
+                    <label>Description</label>
+                    <input value={youtubeForm.description} onChange={e => setYoutubeForm({ ...youtubeForm, description: e.target.value })} placeholder="Short info about this course" />
+                </div>
+                <div className="course-form-actions">
+                    <button className="btn-primary" type="submit"><FaPlus /> Add Video Course</button>
+                </div>
+            </form>
+            <div className="table-responsive padding-wrapper mt-20">
+                <table className="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Video / Thumbnail</th>
+                            <th>Title & Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {youtubeCourses.length === 0 ? (
+                            <tr><td colSpan="3" className="empty-state">No YouTube courses.</td></tr>
+                        ) : (
+                            youtubeCourses.map(course => (
+                                <tr key={course.id}>
+                                    <td>
+                                        <img src={`https://img.youtube.com/vi/${course.video_id}/hqdefault.jpg`} alt="Thumbnail" style={{ width: '120px', borderRadius: '8px', objectFit: 'cover' }} />
+                                    </td>
+                                    <td>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                            <strong>{course.title}</strong>
+                                            <small style={{ color: '#64748b' }}>{course.description || "No description provided."}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button className="btn-icon danger" onClick={() => handleDeleteYoutubeCourse(course.id)} title="Remove Course"><FaTrashAlt /></button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+
     const renderSettingsView = () => {
         const settings = [
             {
@@ -537,6 +711,7 @@ const AdminDashboard = () => {
         ];
 
         return (
+            <>
             <div className="content-card">
                 <div className="card-header">
                     <div>
@@ -560,6 +735,34 @@ const AdminDashboard = () => {
                     ))}
                 </div>
             </div>
+            
+            <div className="content-card" style={{ marginTop: '20px' }}>
+                <div className="card-header">
+                    <div>
+                        <h2><FaLock style={{ color: '#6366f1', marginRight: '8px' }} /> Account Security</h2>
+                        <p>Change your admin password.</p>
+                    </div>
+                </div>
+                <div style={{ padding: '20px' }}>
+                    <form onSubmit={handlePasswordUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxWidth: '400px' }}>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '5px' }}>Current Password</label>
+                            <input type="password" value={passwordData.current} onChange={e => setPasswordData({ ...passwordData, current: e.target.value })} required style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }} />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '5px' }}>New Password</label>
+                            <input type="password" value={passwordData.newPassword} onChange={e => setPasswordData({ ...passwordData, newPassword: e.target.value })} required style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }} />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '5px' }}>Confirm New Password</label>
+                            <input type="password" value={passwordData.confirm} onChange={e => setPasswordData({ ...passwordData, confirm: e.target.value })} required style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }} />
+                        </div>
+                        <button type="submit" className="btn-primary" style={{ padding: '10px' }}>Update Password</button>
+                        {passwordMsg && <p style={{ color: passwordMsg.includes("success") ? "green" : "red" }}>{passwordMsg}</p>}
+                    </form>
+                </div>
+            </div>
+        </>
         );
     };
 
@@ -586,6 +789,8 @@ const AdminDashboard = () => {
                 <nav className="menu">
                     <button className={activeTab === "users" ? "active" : ""} onClick={() => setActiveTab("users")}><FaUsers /> <span>User Management</span></button>
                     <button className={activeTab === "courses" ? "active" : ""} onClick={() => setActiveTab("courses")}><FaBookOpen /> <span>Courses & Content</span></button>
+                    <button className={activeTab === "youtube" ? "active" : ""} onClick={() => setActiveTab("youtube")}><FaVideo /> <span>YouTube Courses</span></button>
+                    <button className={activeTab === "leaves" ? "active" : ""} onClick={() => setActiveTab("leaves")}><FaEnvelopeOpenText /> <span>Faculty Leaves</span></button>
                     <button className={activeTab === "analytics" ? "active" : ""} onClick={() => setActiveTab("analytics")}><FaChartBar /> <span>Reports & Analytics</span></button>
                     <button className={activeTab === "settings" ? "active" : ""} onClick={() => setActiveTab("settings")}><FaCogs /> <span>System Settings</span></button>
                 </nav>
@@ -610,10 +815,14 @@ const AdminDashboard = () => {
                     <div className="stat-card"><div className="icon-bg green"><FaCheckCircle /></div><div><h3>{stats?.active || 0}</h3><p>Active Users</p></div></div>
                 </div>
 
-                {activeTab === "users" && renderUsersView()}
-                {activeTab === "courses" && renderCoursesView()}
-                {activeTab === "analytics" && renderAnalyticsView()}
-                {activeTab === "settings" && renderSettingsView()}
+                <div className="view-container">
+                    {activeTab === "users" && renderUsersView()}
+                    {activeTab === "courses" && renderCoursesView()}
+                    {activeTab === "youtube" && renderYouTubeCoursesView()}
+                    {activeTab === "leaves" && renderFacultyLeavesView()}
+                    {activeTab === "analytics" && renderAnalyticsView()}
+                    {activeTab === "settings" && renderSettingsView()}
+                </div>
             </main>
 
             {renderUserDetailsModal()}

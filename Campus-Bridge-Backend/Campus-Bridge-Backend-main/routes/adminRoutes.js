@@ -16,4 +16,13 @@ router.post("/courses", adminController.createCourse);
 router.put("/course/:id", adminController.updateCourse);
 router.delete("/course/:id", adminController.deleteCourse);
 
+// Faculty Leaves
+router.get("/faculty-leaves", adminController.getFacultyLeaves);
+router.put("/faculty-leaves/:leaveId", adminController.updateFacultyLeave);
+
+// YouTube Courses
+router.get("/youtube-courses", adminController.getYoutubeCourses);
+router.post("/youtube-courses", adminController.addYoutubeCourse);
+router.delete("/youtube-courses/:id", adminController.deleteYoutubeCourse);
+
 module.exports = router;

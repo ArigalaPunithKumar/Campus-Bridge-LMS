@@ -374,3 +374,57 @@ exports.updateLeaveRequest = async (req, res) => {
         res.status(500).json({ msg: "Error updating leave request" });
     }
 };
+
+exports.getAttendanceHistory = async (req, res) => {
+    try {
+        const { facultyId } = req.params;
+        const history = await query(`
+            SELECT a.date, c.course_name, c.course_code, 
+                   COUNT(a.id) as total_students,
+                   SUM(CASE WHEN a.status = 'Present' THEN 1 ELSE 0 END) as present_count
+            FROM attendance a
+            JOIN courses c ON a.course_id = c.id
+            WHERE c.faculty_id = ?
+            GROUP BY a.date, c.id, c.course_name, c.course_code
+            ORDER BY a.date DESC
+        `, [facultyId]);
+        res.json(history);
+    } catch (err) {
+        console.error("Attendance History Error:", err);
+        res.status(500).json({ msg: "Error fetching attendance history" });
+    }
+};
+
+exports.applyLeave = async (req, res) => {
+    try {
+        await ensureLeaveTable();
+        const { facultyId, fromDate, toDate, reason } = req.body;
+        
+        if (!facultyId || !fromDate || !toDate || !reason) {
+            return res.status(400).json({ msg: "All fields are required" });
+        }
+
+        await query(
+            "INSERT INTO faculty_leave_requests (faculty_id, from_date, to_date, reason) VALUES (?, ?, ?, ?)",
+            [facultyId, fromDate, toDate, reason]
+        );
+        res.json({ msg: "Leave applied successfully" });
+    } catch (err) {
+        console.error("Apply Leave Error:", err);
+        res.status(500).json({ msg: "Error applying for leave" });
+    }
+};
+
+exports.getMyLeaves = async (req, res) => {
+    try {
+        const { facultyId } = req.params;
+        const leaves = await query(
+            "SELECT id, DATE_FORMAT(from_date, '%Y-%m-%d') as fromDate, DATE_FORMAT(to_date, '%Y-%m-%d') as toDate, reason, status FROM faculty_leave_requests WHERE faculty_id = ? ORDER BY id DESC",
+            [facultyId]
+        );
+        res.json(leaves);
+    } catch (err) {
+        console.error("Get My Leaves Error:", err);
+        res.status(500).json({ msg: "Error fetching my leaves" });
+    }
+};

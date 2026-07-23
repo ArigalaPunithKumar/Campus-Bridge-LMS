@@ -1,18 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --primary: #6366f1;
-    --primary-glow: rgba(99, 102, 241, 0.2);
-    --secondary: #10b981;
+    --primary: var(--color-signal-blue, #4e9ad9);
+    --primary-glow: rgba(78, 154, 217, 0.2);
+    --secondary: var(--color-midnight-harbor, #0b3658);
     --warning: #f59e0b;
     --danger: #ef4444;
-    --bg-app: #f8fafc;
-    --bg-panel: #ffffff;
-    --text-main: #1e293b;
-    --text-muted: #64748b;
-    --border-color: #e2e8f0;
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --bg-app: var(--color-canvas-white, #ffffff);
+    --bg-panel: var(--color-canvas-white, #ffffff);
+    --text-main: var(--color-midnight-harbor, #0b3658);
+    --text-muted: var(--color-slate-channel, #486984);
+    --border-color: var(--color-sea-fog, #dde7ee);
+    --shadow-sm: var(--shadow-xl-4, rgba(11, 54, 88, 0.04) 0px 4px 32px 0px);
+    --shadow-md: var(--shadow-xl, rgba(11, 54, 88, 0.08) 0px 12px 48px 0px);
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -23,7 +23,7 @@
 }
 
 body {
-    font-family: 'Poppins', sans-serif;
+    font-family: var(--font-figtree, 'Poppins', sans-serif);
     background-color: var(--bg-app);
     color: var(--text-main);
     overflow: hidden;

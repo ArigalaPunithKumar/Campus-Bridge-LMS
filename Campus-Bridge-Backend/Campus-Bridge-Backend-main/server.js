@@ -26,6 +26,8 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // --- 5. REGISTER API ROUTES ---
 app.use("/api/auth", authRoutes);
+
+
 app.use("/api/admin", adminRoutes);
 app.use("/api/faculty", facultyRoutes);
 app.use("/api/student", studentRoutes);
@@ -42,4 +44,14 @@ app.get("/", (req, res) => {
 
 // --- 7. START SERVER ---
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+const { ensureLeaveTable } = require("./utils/leaveService");
+
+app.listen(PORT, async () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    try {
+        await ensureLeaveTable();
+        console.log("✅ Tables ensured (Leave, Faculty Leave, YouTube Courses)");
+    } catch (err) {
+        console.error("❌ Error ensuring tables:", err);
+    }
+});

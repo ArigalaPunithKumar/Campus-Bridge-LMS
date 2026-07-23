@@ -23,6 +23,7 @@
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.10.1",
     "react-scripts": "5.0.1",
+    "uri-js": "^4.4.1",
     "web-vitals": "^2.1.4"
   },
   "devDependencies": {

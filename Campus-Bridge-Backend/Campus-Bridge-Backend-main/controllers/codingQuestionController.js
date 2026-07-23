@@ -293,9 +293,16 @@ const ensureCodingTables = async () => {
             output_format TEXT NOT NULL,
             constraints_text TEXT NOT NULL,
             starter_code MEDIUMTEXT NOT NULL,
+            topic VARCHAR(255) DEFAULT 'General',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     `);
+
+    try {
+        await query("ALTER TABLE coding_questions ADD COLUMN topic VARCHAR(255) DEFAULT 'General'");
+    } catch (err) {
+        // Column likely already exists, ignore
+    }
 
     await query(`
         CREATE TABLE IF NOT EXISTS coding_test_cases (
@@ -333,8 +340,8 @@ const ensureCodingTables = async () => {
         if (!questionId) {
             const result = await query(
                 `INSERT INTO coding_questions
-                    (slug, title, company, difficulty, description, input_format, output_format, constraints_text, starter_code)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    (slug, title, company, difficulty, description, input_format, output_format, constraints_text, starter_code, topic)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'General')`,
                 [
                     question.slug,
                     question.title,
@@ -367,6 +374,7 @@ const mapQuestion = (row) => ({
     id: row.id,
     slug: row.slug,
     title: row.title,
+    topic: row.topic || "General",
     company: row.company,
     difficulty: row.difficulty,
     description: row.description,
@@ -435,6 +443,7 @@ exports.createQuestion = async (req, res) => {
             outputFormat,
             constraints,
             starterCode,
+            topic,
             publicTests = [],
             privateTests = []
         } = req.body;
@@ -455,8 +464,8 @@ exports.createQuestion = async (req, res) => {
         const slug = `${slugify(title)}-${Date.now()}`;
         const result = await query(
             `INSERT INTO coding_questions
-                (slug, title, company, difficulty, description, input_format, output_format, constraints_text, starter_code)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                (slug, title, company, difficulty, description, input_format, output_format, constraints_text, starter_code, topic)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 slug,
                 title,
@@ -466,7 +475,8 @@ exports.createQuestion = async (req, res) => {
                 inputFormat,
                 outputFormat,
                 constraints || "No additional constraints.",
-                JSON.stringify(buildStarterCode(starterCode))
+                JSON.stringify(buildStarterCode(starterCode)),
+                topic || "General"
             ]
         );
 

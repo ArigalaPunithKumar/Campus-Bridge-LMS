@@ -49,5 +49,7 @@ router.get("/streak/:id", studentController.getStreak);
 router.get("/settings/:id", studentController.getSettings);
 router.put("/settings/:id", studentController.saveSettings);
 
+// YouTube Courses
+router.get("/youtube-courses", studentController.getYoutubeCourses);
 
 module.exports = router;

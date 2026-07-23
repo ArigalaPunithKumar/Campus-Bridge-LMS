@@ -1,9 +1,9 @@
 :root {
-    --admin-primary: #2563eb;
-    --admin-ink: #0f172a;
-    --admin-muted: #64748b;
-    --admin-line: #e2e8f0;
-    --admin-soft: #f8fafc;
+    --admin-primary: var(--color-signal-blue, #4e9ad9);
+    --admin-ink: var(--color-midnight-harbor, #0b3658);
+    --admin-muted: var(--color-slate-channel, #486984);
+    --admin-line: var(--color-sea-fog, #dde7ee);
+    --admin-soft: var(--color-canvas-white, #ffffff);
 }
 
 html,
@@ -13,8 +13,8 @@ body {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Inter', 'Poppins', sans-serif;
-    background: #edf2f7;
+    font-family: var(--font-figtree, 'Inter', 'Poppins', sans-serif);
+    background: var(--color-canvas-white, #ffffff);
 }
 
 #root,

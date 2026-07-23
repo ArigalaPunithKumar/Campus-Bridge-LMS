@@ -8,9 +8,9 @@
    1. THEME VARIABLES & RESET
    ========================================= */
 :root {
-  --primary: #6366f1;
-  --primary-glow: rgba(99, 102, 241, 0.4);
-  --secondary: #ec4899;
+  --primary: var(--color-signal-blue, #4e9ad9);
+  --primary-glow: rgba(78, 154, 217, 0.4);
+  --secondary: var(--color-midnight-harbor, #0b3658);
   --safe-color: #10b981;
   --danger-color: #ef4444;
   --warning-color: #f59e0b;
@@ -18,32 +18,34 @@
   --sidebar-width: 260px;
   --header-height: 70px;
   --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --radius-cards: 24px;
+  --radius-buttons: 20px;
 }
 
 /* --- LIGHT THEME --- */
 .light-theme {
-  --bg-app: #f8fafc;
-  --bg-panel: #ffffff;
-  --bg-element: #f1f5f9;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --border-color: #e2e8f0;
-  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-  --scroll-track: #f1f5f9;
-  --scroll-thumb: #cbd5e1;
+  --bg-app: var(--color-canvas-white, #ffffff);
+  --bg-panel: var(--color-canvas-white, #ffffff);
+  --bg-element: var(--color-ice-tint, #e6f1fa);
+  --text-main: var(--color-midnight-harbor, #0b3658);
+  --text-muted: var(--color-slate-channel, #486984);
+  --border-color: var(--color-sea-fog, #dde7ee);
+  --shadow-lg: var(--shadow-xl, rgba(11, 54, 88, 0.08) 0px 12px 48px 0px);
+  --scroll-track: var(--color-canvas-white, #ffffff);
+  --scroll-thumb: var(--color-sea-fog, #dde7ee);
 }
 
 /* --- DARK THEME --- */
 .dark-theme {
-  --bg-app: #0f172a;
-  --bg-panel: #1e293b;
-  --bg-element: #334155;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --border-color: #334155;
-  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
-  --scroll-track: #0f172a;
-  --scroll-thumb: #475569;
+  --bg-app: var(--color-midnight-harbor, #0b3658);
+  --bg-panel: var(--color-midnight-harbor, #0b3658);
+  --bg-element: var(--color-slate-channel, #486984);
+  --text-main: var(--color-canvas-white, #ffffff);
+  --text-muted: var(--color-light-mist, #c8d8e4);
+  --border-color: var(--color-slate-channel, #486984);
+  --shadow-lg: var(--shadow-xl-3, rgba(11, 54, 88, 0.08) 0px -20px 80px 0px);
+  --scroll-track: var(--color-midnight-harbor, #0b3658);
+  --scroll-thumb: var(--color-slate-channel, #486984);
 }
 
 * {
@@ -2131,6 +2133,32 @@ textarea {
   margin: 4px 0 0;
   color: #475569;
   font-size: 0.9rem;
+}
+
+.assessment-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.assessment-ai-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #99f6e4;
+  background: #ecfeff;
+  color: #0f766e;
+  border-radius: 8px;
+  padding: 0.65rem 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.assessment-ai-btn.active,
+.assessment-ai-btn:hover {
+  background: linear-gradient(135deg, #0d9488, #2563eb);
+  color: #ffffff;
+  border-color: transparent;
 }
 
 .assessment-exit-btn {

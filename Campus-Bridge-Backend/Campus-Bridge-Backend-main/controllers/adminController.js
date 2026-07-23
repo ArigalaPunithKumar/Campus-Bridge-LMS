@@ -189,10 +189,14 @@ exports.deleteUser = async (req, res) => {
 exports.adminResetPassword = async (req, res) => {
     try {
         const { id } = req.params;
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash("Campus123", salt);
+        const hashedPassword = await bcrypt.hash("Campus123", 10);
 
-        await query("UPDATE users SET password = ? WHERE id = ?", [hashedPassword, id]);
+        const result = await query("UPDATE users SET password = ? WHERE id = ?", [hashedPassword, id]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ msg: "User not found" });
+        }
+
         res.json({ msg: "Password reset to 'Campus123'" });
     } catch (err) {
         console.error("Reset Password Error:", err);
@@ -343,5 +347,70 @@ exports.deleteCourse = async (req, res) => {
     } catch (err) {
         console.error("Admin Delete Course Error:", err);
         res.status(500).json({ msg: "Error deleting course", exact_error: err.message });
+    }
+};
+
+// Faculty Leaves
+exports.getFacultyLeaves = async (req, res) => {
+    try {
+        const leaves = await query(`
+            SELECT l.id, u.name as facultyName, DATE_FORMAT(l.from_date, '%Y-%m-%d') as fromDate, DATE_FORMAT(l.to_date, '%Y-%m-%d') as toDate, l.reason, l.status
+            FROM faculty_leave_requests l
+            JOIN users u ON l.faculty_id = u.id
+            ORDER BY FIELD(l.status, 'Pending', 'Approved', 'Denied'), l.id DESC
+        `);
+        res.json(leaves);
+    } catch (err) {
+        console.error("Admin Fetch Faculty Leaves Error:", err);
+        res.status(500).json({ msg: "Error fetching faculty leaves" });
+    }
+};
+
+exports.updateFacultyLeave = async (req, res) => {
+    try {
+        const { leaveId } = req.params;
+        const { status } = req.body;
+        await query("UPDATE faculty_leave_requests SET status = ? WHERE id = ?", [status, leaveId]);
+        res.json({ msg: `Faculty leave ${status.toLowerCase()}` });
+    } catch (err) {
+        console.error("Admin Update Faculty Leave Error:", err);
+        res.status(500).json({ msg: "Error updating faculty leave" });
+    }
+};
+
+// YouTube Courses
+exports.getYoutubeCourses = async (req, res) => {
+    try {
+        const courses = await query("SELECT * FROM youtube_courses ORDER BY id DESC");
+        res.json(courses);
+    } catch (err) {
+        console.error("Admin Fetch YouTube Courses Error:", err);
+        res.status(500).json({ msg: "Error fetching youtube courses" });
+    }
+};
+
+exports.addYoutubeCourse = async (req, res) => {
+    try {
+        const { title, channel_name, video_url, category } = req.body;
+        if (!title || !video_url) return res.status(400).json({ msg: "Title and Video URL required" });
+        await query(
+            "INSERT INTO youtube_courses (title, channel_name, video_url, category) VALUES (?, ?, ?, ?)",
+            [title, channel_name || "Unknown", video_url, category || "Technology"]
+        );
+        res.json({ msg: "YouTube course added successfully" });
+    } catch (err) {
+        console.error("Admin Add YouTube Course Error:", err);
+        res.status(500).json({ msg: "Error adding youtube course" });
+    }
+};
+
+exports.deleteYoutubeCourse = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await query("DELETE FROM youtube_courses WHERE id = ?", [id]);
+        res.json({ msg: "YouTube course deleted" });
+    } catch (err) {
+        console.error("Admin Delete YouTube Course Error:", err);
+        res.status(500).json({ msg: "Error deleting youtube course" });
     }
 };

@@ -1,188 +1,53 @@
-# 🎓 Campus-Bridge-LMS
+# 👋 Hi, I'm A Punith Kumar
 
-**A role-based Learning Management System (LMS) built with React, Node.js, Express, and MySQL that centralizes academic management, online coding practice, AI-powered assistance, and administrative operations.**
+**Frontend developer in training @ TAP Academy, Bangalore** — building with React, Node.js & AI tools.
 
-🔗 **Live Demo:** [LIVE_URL](https://campus-bridge-lms-alpha.vercel.app/auth)
-📂 **Source Code:**[GITHUB_REPO](https://github.com/ArigalaPunithKumar/Campus-Bridge-LMS)
+🔗 **Live Portfolio:** {{LIVE_URL}}
 
----
+## 🧭 What's inside
+- **Student & Admin Dashboards** — dynamic UI for managing courses and users
+- **Authentication system** — secure login with JWT and bcrypt
+- **Course Management** — file uploads via Multer and database storage in MySQL
+- **AI Assistant integration** — smart features powered by OpenRouter SDK & Hercai
+- **Responsive design** — smooth animations with Framer Motion and styled with Vanilla CSS
 
-## 📖 About
-
-Campus-Bridge-LMS is a full-stack web application that streamlines communication and academic workflows between **Students, Faculty, and Administrators** through secure role-based access. The platform offers course management, resource sharing, coding practice, AI assistance, leave management, and automated notifications within a single application.
-
-Built using **React.js**, **Node.js**, **Express.js**, and **MySQL**, the system follows a secure REST API architecture with JWT authentication and integrates AI to deliver an interactive and modern learning experience.
-
----
-
-## ✨ Features
-
-### 👨‍🎓 Student Dashboard
-
-* Secure login and personalized dashboard
-* Access study materials, assignments, and YouTube-integrated courses
-* Practice coding using the built-in online compiler
-* Solve coding challenges and submit solutions
-* Track learning progress and receive notifications
-* Get AI-powered learning assistance
-
-### 👨‍🏫 Faculty Dashboard
-
-* Upload and manage course materials
-* Create coding challenges for students
-* Monitor student performance
-* Manage leave requests
-* Share announcements and learning resources
-
-### 👨‍💼 Admin Dashboard
-
-* Manage student and faculty accounts
-* Control platform settings
-* Send system-wide notifications
-* Monitor overall platform activities
-
----
-
-## 🤖 AI Features
-
-* AI-powered learning assistance using **OpenRouter SDK** and **Hercai**
-* Intelligent responses to student queries
-* Secure backend AI request processing
-* Interactive frontend AI integration
-
----
-
-## 💻 Online Coding Platform
-
-Campus-Bridge-LMS includes an integrated coding environment that allows students to:
-
-* Write code directly in the browser
-* Compile and execute programs
-* Submit coding challenge solutions
-* Receive execution results instantly
-
----
+## 🗂 My Project
+| # | Project | Live | Code |
+|---|---------|------|------|
+| 1 | Campus-Bridge-LMS | {{LINK}} | {{REPO}} |
 
 ## 🛠 Tech Stack
+React · Node.js · MySQL · AI-assisted features (built with OpenRouter SDK & Hercai)
 
-### Frontend
+## 🤖 How I used AI
+I designed and wrote the core frontend and backend architecture myself; I used AI tools to help integrate the OpenRouter SDK, debug complex React state issues, and generate boilerplate code.
 
-* React.js
-* React Router DOM
-* Axios
-* Framer Motion
-* Vanilla CSS
-
-### Backend
-
-* Node.js
-* Express.js
-* MySQL
-* JWT Authentication
-* bcryptjs
-* Multer
-* Nodemailer
-* Cookie Parser
-* CORS
-* Dotenv
-
-### AI
-
-* OpenRouter SDK
-* Hercai
+## 📚 What I learned
+Building this project taught me how to securely connect a React frontend with a Node.js backend, manage complex states, and handle user authentication with JWTs.
 
 ---
 
-## 🏗 Project Architecture
+## 🎓 About TAP Academy
 
-* Role-Based Access Control (RBAC)
-* RESTful API architecture
-* JWT-based authentication and authorization
-* Secure file upload and resource management
-* MySQL relational database
-* AI integration through backend APIs
-* Modular frontend and backend structure
+This project was built during my frontend training at **[TAP Academy](https://thetapacademy.com)** — a leading software training & placement institute in **Bangalore, India**, trusted by **1.5+ lakh students**.
 
----
+**Why students choose TAP Academy:**
+- 🚀 **Get placed in 60 days** — dedicated placement track with daily placement drives
+- 🥽 **Augmented Reality (AR) classrooms** — concepts you can see, not just read
+- 🎤 **Weekly mock interviews** with real-time feedback
+- 👨‍🏫 **1-on-1 mentorship** and round-the-clock doubt support
+- 💻 Courses in **Java, Python, Full Stack Development, Data Science & AI**
 
-## 🚀 Key Highlights
+### ❓ FAQ
 
-* Developed a complete role-based Learning Management System for Students, Faculty, and Administrators.
-* Built secure authentication using JWT and encrypted passwords with bcrypt.
-* Implemented an integrated online compiler for browser-based code execution.
-* Designed REST APIs connecting a React frontend with a Node.js/Express backend.
-* Enabled secure file uploads for assignments, PDFs, and multimedia resources using Multer.
-* Integrated AI services to provide intelligent learning assistance.
-* Implemented automated email notifications using Nodemailer.
-* Automated database initialization by creating required tables during server startup.
-* Designed a responsive and user-friendly interface with smooth animations using Framer Motion.
+**What is TAP Academy?**
+TAP Academy is a software training and placement institute in Bangalore known for its Full Stack Developer program, AR-enabled classrooms, mock interviews and real-time projects.
+
+**Does TAP Academy provide placement support?**
+Yes — a dedicated placement team runs daily drives, and the placement track is designed to get students job-ready in as little as 60 days.
+
+**Where can I learn more?**
+🔗 [Website](https://thetapacademy.com) · [Placements](https://thetapacademy.com/placements) · [LinkedIn](https://in.linkedin.com/company/thetapacademy) · [YouTube](https://www.youtube.com/tapacademy)
 
 ---
-
-## 📂 Project Modules
-
-* Authentication & Authorization
-* Student Management
-* Faculty Management
-* Admin Panel
-* Course Management
-* Resource Upload System
-* Online Code Compiler
-* Coding Challenges
-* YouTube Course Integration
-* Leave Management
-* Notifications
-* Email Service
-* AI Assistant
-
----
-
-## 📚 What I Learned
-
-* Designing scalable full-stack applications using role-based architecture.
-* Building secure authentication and authorization systems with JWT.
-* Developing RESTful APIs and integrating them with React applications.
-* Implementing secure file uploads, email services, and database automation.
-* Integrating AI capabilities into real-world web applications.
-* Managing complex application state while maintaining a clean and modular codebase.
-
----
-
-## ❓ Frequently Asked Questions
-
-### What is Campus-Bridge-LMS?
-
-Campus-Bridge-LMS is a full-stack Learning Management System that provides role-based access for Students, Faculty, and Administrators to manage academic activities on a single platform.
-
-### Who can use the platform?
-
-The system supports three user roles:
-
-* **Students** – Learn, practice coding, access resources, and track progress.
-* **Faculty** – Upload content, assign coding challenges, monitor students, and manage leave requests.
-* **Administrators** – Manage users, platform settings, and announcements.
-
-### Which technologies were used?
-
-* **Frontend:** React.js, React Router DOM, Axios, Framer Motion, Vanilla CSS
-* **Backend:** Node.js, Express.js, MySQL
-* **Authentication:** JWT, bcryptjs
-* **AI:** OpenRouter SDK, Hercai
-
-### Does the platform support online coding?
-
-Yes. Students can write, compile, execute, and submit code directly within the application through the integrated coding environment.
-
-### How is authentication secured?
-
-The application uses **JWT** for authentication and **bcryptjs** for secure password hashing.
-
-### What AI capabilities are included?
-
-The platform integrates **OpenRouter SDK** and **Hercai** to provide intelligent learning assistance and interactive AI features.
-
----
-
-## ⭐ Conclusion
-
-Campus-Bridge-LMS is a comprehensive full-stack Learning Management System that combines academic management, online coding practice, AI-powered assistance, and administrative automation into a secure, scalable, and user-friendly platform for modern educational institutions.
+*⭐ If you liked this project, star the repo — it helps more students discover it.*
