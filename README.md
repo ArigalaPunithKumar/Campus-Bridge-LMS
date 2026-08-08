@@ -51,6 +51,27 @@ A major highlight of Campus-Bridge-LMS is its integrated coding environment. Stu
 
 ---
 
+## 🏗️ System Architecture
+
+```mermaid
+graph TD
+    A[Student / Faculty / Admin] -->|HTTP Requests| B[React Frontend]
+    B -->|REST APIs + JWT| C[Node.js + Express Backend]
+    
+    C -->|Queries| D[(MySQL Database)]
+    C -->|Code Execution| E[Online Compiler API]
+    C -->|AI Prompts| F[OpenRouter / Hercai API]
+    
+    subgraph Frontend Features
+    B1(Dashboard)
+    B2(Course Material)
+    B3(Coding IDE)
+    end
+    B -.-> B1 & B2 & B3
+```
+
+---
+
 ## 🛠 Tech Stack
 
 **Frontend Architecture:**
@@ -68,6 +89,41 @@ A major highlight of Campus-Bridge-LMS is its integrated coding environment. Stu
 
 **AI & Third-Party Integrations:**
 * **OpenRouter SDK / Hercai** for the intelligent learning assistant.
+
+---
+
+## 🚀 Local Setup Instructions
+
+Follow these steps to run Campus-Bridge-LMS on your local machine.
+
+### Prerequisites
+* Node.js (v18+)
+* MySQL Server
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/ArigalaPunithKumar/Campus-Bridge-LMS.git
+cd Campus-Bridge-LMS
+```
+
+### 2. Backend Setup
+```bash
+cd Campus-Bridge-Backend
+npm install
+```
+* Create a `.env` file in the backend root and add your database credentials and JWT secrets.
+* Run the SQL scripts provided in the backend folder to set up your database schema.
+```bash
+npm run dev
+```
+
+### 3. Frontend Setup
+```bash
+cd ../Campus-Bridge-Frontend
+npm install
+npm run dev
+```
+* The React app will be available at `http://localhost:5173`.
 
 ---
 
